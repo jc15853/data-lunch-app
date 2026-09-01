@@ -70,7 +70,7 @@ with tab1:
 
         danger_df = df[df['알레르기_리스트'].apply(check_allergy)]
         
-        st.write(f"⚠️ 9월 중 주의해야 할 급식일은 총 **{len(danger_df)}일**입니다.")
+        st.write(f"⚠️ 주의해야 할 급식일은 총 **{len(danger_df)}일**입니다.")
         st.dataframe(danger_df[['날짜', '메뉴', '비고']], use_container_width=True)
     else:
         st.info("위에서 알레르기 항목을 선택하면 CSV 데이터에서 해당되는 날을 자동으로 검색해 줍니다.")
@@ -79,7 +79,7 @@ with tab1:
 # TAB 2: 데이터 시각화
 # -----------------------------------------------------------------------------
 with tab2:
-    st.subheader("2️⃣ 9월 급식 영양 데이터 시각화")
+    st.subheader("2️⃣ 급식 영양 데이터 시각화")
     
     metric_type = st.selectbox("시각화할 영양소 데이터를 선택하세요:", ["에너지", "단백질", "칼슘", "철"])
     
@@ -88,7 +88,7 @@ with tab2:
     
     # 데이터 가공을 통한 최고값 자동 탐색
     max_row = df.sort_values(by=metric_type, ascending=False).iloc[0]
-    st.success(f"💡 9월 중 **{metric_type}** 수치가 가장 높은 날은 **{max_row['날짜']}**이며, 수치는 **{max_row[metric_type]}**입니다. (메뉴: {max_row['메뉴']})")
+    st.success(f"💡 **{metric_type}** 수치가 가장 높은 날은 **{max_row['날짜']}**이며, 수치는 **{max_row[metric_type]}**입니다. (메뉴: {max_row['메뉴']})")
 
 # -----------------------------------------------------------------------------
 # TAB 3: 조건문 필터링
