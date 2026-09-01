@@ -1,321 +1,258 @@
-import io
-import os
-import re
-import requests
-import streamlit as st
-import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
 
-# -----------------------------------------------------------------------------
-# 0. 페이지 설정 및 세션 상태 초기화
-# -----------------------------------------------------------------------------
-st.set_page_config(page_title="스마트 급식 데이터 식단 연구소", page_icon="🍱", layout="wide")
+월요일
+화요일
+수요일
+목요일
+금요일
+♣ 학교급식을 통해 
+평균 필요량 이상의 
+영양을 공급합니다.
+♣ 매일 잡곡류, 현미찹쌀 혼합하여 [현미건강밥상]
+운영.
+♣주2회 이상[잔반없는날] 운영. 
+♣ 월1회 이상 [NA줄이기- 국 없는 날] 운영.
+♣ 안전한 학교급식을 위해 개인위생수칙을 
+준수하여 점심식사 전  손을 씻고 식사 합시다.
+1
+(압맥)현미찹쌀밥
+(쇠고기)두부된장찌개(5.6.9.16)
+명태피.고추부각강정무침(5.6.13.18)
+(마늘)대패삼겹살구이(10.13)/쌈무(5.6.9.13.)
+/ 채.쑥갓겉절이(5.6.13)
+보쌈김치(9)
+* 에너지/단백질/칼슘/철
+900.3/33.2/218.3/3.3
+2 [잔반 없는 날]
+ [NA줄이기- 국 없는 날]
+오므라이스(1.2.5.6.10.12.13.15.16)
+<햄볶음밥/계란지단/소스>
+(들기름.올리브유)통들깨.양배추.방울토마토샐러드(12)
+국물떡볶이(1.2.5.6.9.12.13.16.18)
+당면만두튀김(1.5.6.10.16.18)
+/오징어튀김(1.5.6.17)
+깍두기(9)
+(얼려먹는)요구르트(2)
+* 에너지/단백질/칼슘/철
+956.2/33.0/243.2/4.5
+3 [잔반 없는 날]
+[9월 생일축하밥상]
+(쥐눈이콩)현미찹쌀밥
+(들깨)옹심이만두미역국(1.5.6.9.10.13.15.16.18)
+(한우)버섯불고기(5.6.13.16.18)
+(고추장)더덕찹쌀강정(5.6.13)
+배추김치(9)
+(대구)꿀떡(1,5,6,13)
+* 에너지/단백질/칼슘/철
+701.1/34.0/268.4/5.4
+4
+(찰흑미)현미찹쌀밥
+부대찌개(1.2.5.6.9.10.12.13.15.16.18)
+(애느타리버섯)가지나물(5.6.18)
+(LA)돼지갈비구이(2.5.6.10.13.18)
+깻잎김치(9)
+포도(거봉)
+* 에너지/단백질/칼슘/철
+858.1/42.4/238.9/3.6
+7
+발아현미찹쌀밥
+고디국(5.6.9.13.18)
+(김치)도토리묵무침(5.6.9.13.18)
+닭날개간장오븐구이(1.4.5.6.13.15.18)
+(삶은)껍질땅콩(4)
+(얼스)멜론
+* 에너지/단백질/칼슘/철
+713.0/35.2/326.0/4.1
+8
+(귀리)현미찹쌀밥
+(경상도식)쇠고기국(5.6.9.13.16.18)
+(자장소스)돼지고기.가지볶음(5.6.10.12.13.18)
+/(주머니)꽃빵(5.6)
+연어구이/데리야끼소스(5.6.12.13.18)
+배추김치(9)
+자두
+* 에너지/단백질/칼슘/철
+612.8/30.9/248.0/3.6
+9 [잔반 없는 날]
+(녹두)현미찹쌀밥
+(능이.황기)닭(봉)곰탕(13.15)
+오이고추.파프리카된장
+무침(5.6.13)
+칠리새우(5.6.9.12.13)
+깍두기(9)
+옥수수빵(1.2.5.6)
+* 에너지/단백질/칼슘/철
+780.7/43.6/159.5/4.5
+10
+(청차조)현미찹쌀밥
+(오징어)짬뽕우동국(5.6.9.10.12.13.17.18)
+(마라)순살찜닭(2.5.6.12.13.15.16.18)
+(발사믹)방울토마토.오이초무침(2.5.6.12.13)
+배추김치(9)
+(하우스)밀감
+* 에너지/단백질/칼슘/철
+782.1/44.0/246.7/4.0
+11 [잔반 없는 날]
+(할맥)현미찹쌀밥
+(새우살)순두부백탕(5.6.9.13.18)
+(아몬드)새우.멸치조림(5.6.9.13)
+쫄면(5.6.13)
+/(돼지고기)육전(1.5.6.10.15.18)
+배추김치(9)
+(물방울)츄러스(1.2.5.6)
+* 에너지/단백질/칼슘/철
+754.9/34.6/450.2/5.4
+14
+(찰옥수수)현미찹쌀밥
+김치콩나물국(5.6.9.13.18)
+(새우.가리비감바스)파스타(1.2.5.6.9.12.13.18)
+갈릭크로와상(1.2.5.6)
+쥐포엿장조림(5.6.13)
+오이피클(0)
+사과(13)
+* 에너지/단백질/칼슘/철
+748.3/28.0/264.1/3.3
+15 [잔반 없는 날]
+(찰기장)현미찹쌀밥
+(인삼)한우갈비탕(5.6.13.16.18)
+코다리순살(매콤)강정(5.6.13)
+청경채된장무침(5.6.13)
+알타리김치(9)
+(사과.키위)요구르트(2)
+* 에너지/단백질/칼슘/철
+903.8/85.4/469.2/7.3
+16[1학년 급식미실시-수련활동]
+[잔반 없는 날]
+(지코바)치.밥(1.5.6.12.13.15.18)
+<현미찹쌀밥/닭고기구이조림/스크램블에그/깻잎채/김가루>
+(순두부)미소된장국(5.6.9.13.18)
+(그릭요커트.올리브유)
+보코치니치즈.과일샐러드(1.2.5.6.12.13)
+청매실.마늘쫑장아찌무침(5.6.13)
+과일젤리(쁘띠첼)(5.6)
+* 에너지/단백질/칼슘/철
+918.9/50.6/393.8/4.8
+171학년 급식미실시-수련활동]
+(차수수)현미찹쌀밥
+(쑥갓.유부)우동국(5.6.9.13.18)
+맛살숙주나물무침(5.6)
+북성로불고기
+(2.5.6.10.12.13.18)
+배추김치(9)
+(달콤한)햇배(13)
+* 에너지/단백질/칼슘/철
+843.5/40.9/284.2/4.5
+18[1학년 급식미실시-수련활동]
+(감자.보리)현미찹쌀밥
+오징어무국(5.6.9.13.17.18)
+(콩줄기)어묵볶음(1.5.6.13.18)
+스팸구이(1.2.5.6.10.15.16)
+두부구이(5)
+(참치)김치볶음(5.6.9.13.16.18)
+(허니글로우)골드파인애플
+* 에너지/단백질/칼슘/철
+786.9/46.9/373.3/4.5
+21 [중간고사]
+[잔반 없는 날]
+간짜장면(1.5.6.10.13.18)
+<중화면/볶음짜장/오이채>
+현미찹쌀밥-작은밥
+(견과류)파래김자반
+표고.꿔바로우탕수육(1.5.6.10)
+(레몬)탕수소스(5.6.13)
+단무지(5.6.9.13)
+요구르트(2)
+* 에너지/단백질/칼슘/철
+772.7/26.2/149.4/10.0
+22 [중간고사]
+[추석절식][잔반 없는 날]
+가바현미찹쌀밥
+(쇠고기)알토란탕(5.6.9.13.16.18)
+(동인동식)돼지찜갈비(5.6.10.13.18)
+(치즈)오색산적(1.2.5.6.10.15.16)
+배추김치(9)
+(추석맞이)깨송편
+* 에너지/단백질/칼슘/철
+967.2/43.7/178.9/3.3
+23
+동아리전일제
+24
+추석연휴
+25
+추석
+28
+(병아리콩.기장)현미찹쌀밥
+(들깨)황태채미역국(5.6.9.13.18)
+(치즈)로제떡볶이(1.2.5.6.10.12.13.15.16.18)
+/가마보꼬어묵구이(1.5.6)
+배추김치(9)
+청포도(샤인머스켓)
+* 에너지/단백질/칼슘/철
+755.9/31.9/445.2/3.5
+29
+(찰보리)현미찹쌀밥
+(두부)단배추된장국(5.6.9.13.18)
+(땅콩소스)우엉샐러드(1.2.4.5.6.13)
+제육볶음(5.6.10.13.18)
+배추김치(9)
+골드키위
+* 에너지/단백질/칼슘/철
+710.3/31.9/330.6/4.1
+30 [잔반 없는 날]
+(전복.톳)곤드레나물밥(5.6.13.18)
+/양념장(5.6.13.18)
+(들깨)무채국(5.6.9.13.18)
+(전통)김.가지부각(5.6.13)
+(마늘)훈제오리.버섯구이(5.13)
+/(간장겨자소스)부추,양배추샐러드(5.6.13)
+배추김치(9)
+* 에너지/단백질/칼슘/철
+709.0/33.5/370.2/4.3
+♣ 알레르기정보
+①난류,②우유,③메밀,④땅콩,⑤대두,⑥밀,⑦고등어,⑧게,⑨새우,⑩돼지고기,⑪복숭아, ⑫토마토, ⑬아황산염, ⑭호두, ⑮닭고기,
+⑯쇠고기, ⑰오징어, ⑱조개류(굴, 전복, 홍합 포함) ⑲ 잣
+* 가정에서 메뉴를 보신 후 학생 체질에 맞게 반드시  가려서 먹도록 지도해 주시기 바랍니다.
+ * 특정식품에 알레르기가 있어 상담 희망 시 식생활관리실로 연락 주시면 개별 상담 토록 하겠습니다.
+♣ 학교급식은 좋아하는 것을 마음껏 먹는 것이 아니라, 균형된 식단으로 골고루 건강하게 섭취해야 하는 교육의 일환
+입니다.
+쇠고기 및 가공품
+돼지고기, 닭고기, 오리고기 및 가공품
+배추김치
+수산물
+쌀
+(밥,죽,누룽지)
+콩
+1등급,
+한우
+1등급
+배추
+고추가루
+미꾸라지,뱀장어,고등어,꽃게
+,오징어,갈치,아귀,참조기,전복
+,방어,부세 / 국내산
+명태
+낙지
+,주꾸미
+백미
+잡곡류
+두부
+콩가루
+,콩국수
+,콩비지
+가공품
+/국내산
+가공품/국내산
+국산
+국내산
+(영양군)
+가공품 / 국내산
+, 다랑어(가공품) 원양산
+러시아
+중국산
+(베트남)
+국내산
+국산
+국산
+국산
+미사용품목(표기제외) / 양(염소)고기, 가리비, 참돔, 조피볼락, 넙치, 우렁쉥이
 
-if 'my_menu' not in st.session_state:
-    st.session_state.my_menu = []
-if 'chef_note' not in st.session_state:
-    st.session_state.chef_note = ""
-
-# -----------------------------------------------------------------------------
-# 1. 데이터 로드 및 폰트/유틸리티 함수
-# -----------------------------------------------------------------------------
-@st.cache_data
-def load_menu():
-    try:
-        return pd.read_csv('menu.csv')
-    except Exception:
-        # 파일이 없을 때 대비용 확장 기본 데이터
-        return pd.DataFrame({
-            '메뉴명': ['통밀밥', '콩나물국', '제육볶음', '배추김치', '샤인머스캣', '마라탕', '치킨마요덮밥'],
-            '카테고리': ['밥', '국', '메인반찬', '김치', '후식', '메인반찬', '밥'],
-            '칼로리(kcal)': [250, 45, 380, 25, 60, 520, 480],
-            '단백질(g)': [5.0, 4.0, 25.0, 1.0, 1.0, 18.0, 20.0],
-            '나트륨(mg)': [10, 450, 620, 320, 5, 1100, 750],
-            '이미지url': ['https://via.placeholder.com/150'] * 7
-        })
-
-# 세션 상태에 데이터프레임 저장 (학생들이 새로 등록한 데이터 유지를 위함)
-if 'menu_df' not in st.session_state:
-    st.session_state.menu_df = load_menu()
-
-df_menu = st.session_state.menu_df
-
-@st.cache_resource
-def get_korean_font(size):
-    font_filename = "NanumGothic.ttf"
-    font_url = "https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf"
-    if not os.path.exists(font_filename):
-        try:
-            res = requests.get(font_url, timeout=5)
-            with open(font_filename, "wb") as f:
-                f.write(res.content)
-        except Exception:
-            pass
-    try:
-        return ImageFont.truetype(font_filename, size)
-    except Exception:
-        return ImageFont.load_default()
-
-def remove_emojis(text):
-    emoji_pattern = re.compile(
-        "["
-        "\U00010000-\U0010FFFF"
-        "\u2600-\u27BF"
-        "\u2300-\u23FF"
-        "\u2B00-\u2BFF"
-        "]+",
-        flags=re.UNICODE
-    )
-    return emoji_pattern.sub(r'', text).strip()
-
-# PNG 이미지 카드 생성 함수
-def generate_menu_card(menu_list, total_cal, total_protein, total_sodium, note):
-    width, height = 650, 800
-    img = Image.new('RGB', (width, height), color='#FFFFFF')
-    draw = ImageDraw.Draw(img)
-
-    font_title = get_korean_font(22)
-    font_sub = get_korean_font(13)
-    font_body = get_korean_font(14)
-    font_bold = get_korean_font(15)
-
-    clean_note = remove_emojis(note)
-
-    # 테두리 및 헤더
-    draw.rectangle([(10, 10), (width-10, height-10)], outline='#047857', width=3)
-    draw.rectangle([(20, 20), (width-20, 85)], fill='#ECFDF5')
-    draw.text((width//2, 40), "[내가 만든 오늘의 급식 식단표]", fill='#047857', font=font_title, anchor="mm")
-    draw.text((width//2, 68), "중1 정보 데이터 분석 & 영양 진단 결과", fill='#4B5563', font=font_sub, anchor="mm")
-
-    # 메뉴 목록
-    draw.text((30, 105), "[선택한 급식 메뉴 데이터]", fill='#1F2937', font=font_bold)
-    draw.line([(30, 128), (width-30, 128)], fill='#E5E7EB', width=1)
-
-    y_offset = 140
-    for item in menu_list:
-        clean_name = remove_emojis(item['메뉴명'])
-        text_line = f"• [{item['카테고리']}] {clean_name}"
-        info_line = f"{item['칼로리(kcal)']} kcal | 단백질 {item['단백질(g)']}g | 나트륨 {item['나트륨(mg)']}mg"
-        
-        draw.text((40, y_offset), text_line, fill='#1F2937', font=font_bold)
-        draw.text((width-40, y_offset), info_line, fill='#4B5563', font=font_body, anchor="ra")
-        y_offset += 32
-
-    # 영양 성분 정산 영역
-    draw.rectangle([(30, 450), (width-30, 580)], fill='#F9FAFB', outline='#E5E7EB')
-    draw.text((50, 470), "총 칼로리 (정수):", fill='#374151', font=font_body)
-    draw.text((width-50, 470), f"{total_cal} kcal (권장: 600~800)", fill='#047857', font=font_bold, anchor="ra")
-
-    draw.text((50, 505), "총 단백질 (실수):", fill='#374151', font=font_body)
-    draw.text((width-50, 505), f"{total_protein:.1f} g (권장: 20g 이상)", fill='#16A34A', font=font_bold, anchor="ra")
-
-    draw.text((50, 540), "총 나트륨 (정수):", fill='#374151', font=font_body)
-    draw.text((width-50, 540), f"{total_sodium} mg (권장: 1000mg 이하)", fill='#DC2626', font=font_bold, anchor="ra")
-
-    # 학생 영양사 피드백 영역
-    draw.rectangle([(30, 600), (width-30, 760)], fill='#FEF3C7', outline='#F59E0B')
-    draw.text((45, 615), "[학생 데이터 분석가의 한마디]", fill='#B45309', font=font_bold)
-
-    lines = []
-    words = clean_note.split(' ')
-    curr_line = ""
-    for w in words:
-        if len(curr_line + w) > 32:
-            lines.append(curr_line)
-            curr_line = w + " "
-        else:
-            curr_line += w + " "
-    lines.append(curr_line)
-
-    ry = 645
-    for line in lines[:4]:
-        draw.text((45, ry), line.strip(), fill='#4B5563', font=font_body)
-        ry += 22
-
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format='PNG')
-    return img_byte_arr.getvalue()
-
-# -----------------------------------------------------------------------------
-# 2. 메인 UI 화면 구성
-# -----------------------------------------------------------------------------
-st.title("🍱 중1 정보 [2.데이터] 스마트 급식 데이터 연구소")
-st.caption("수집된 메뉴 데이터를 조합하고 가공하여 영양 균형을 분석하는 프로그래밍 프로젝트입니다.")
-
-# 데이터 단원 개념 학습 서브 탭
-tabs = st.tabs(["🍽️ 급식 식단 짜기 및 분석", "📥 새로운 메뉴 데이터 수집/등록", "🔍 데이터 유형(Type) 개념 확인"])
-
-# -----------------------------------------------------------------------------
-# TAB 1: 급식 식단 짜기 및 분석 (기존 메인 기능 발전)
-# -----------------------------------------------------------------------------
-with tabs[0]:
-    col_left, col_right = st.columns([1.2, 1])
-
-    with col_left:
-        st.subheader("📋 메뉴 데이터베이스 (검색 & 선택)")
-        
-        # 카테고리 필터링
-        categories = ["전체"] + list(df_menu['카테고리'].unique())
-        selected_cat = st.selectbox("카테고리 필터링:", categories)
-        
-        if selected_cat != "전체":
-            filtered_df = df_menu[df_menu['카테고리'] == selected_cat]
-        else:
-            filtered_df = df_menu
-
-        # 메뉴 카드 출력
-        grid_cols = st.columns(2)
-        for idx, row in filtered_df.iterrows():
-            with grid_cols[idx % 2]:
-                st.markdown(
-                    f'<div style="border: 1px solid #E5E7EB; border-radius: 10px; padding: 10px; margin-bottom: 10px; background-color: #FFFFFF;">'
-                    f'<img src="{row["이미지url"]}" style="width: 100%; height: 90px; object-fit: cover; border-radius: 6px;" />'
-                    f'<h4 style="margin: 8px 0 4px 0; color:#047857;">[{row["카테고리"]}] {row["메뉴명"]}</h4>'
-                    f'<p style="font-size: 13px; color: #4B5563; margin: 0;">🔥 {row["칼로리(kcal)"]}kcal | 💪 {row["단백질(g)"]}g | 🧂 {row["나트륨(mg)"]}mg</p>'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-                
-                # 버튼 로직
-                is_selected = any(m['메뉴명'] == row['메뉴명'] for m in st.session_state.my_menu)
-                if is_selected:
-                    if st.button(f"❌ {row['메뉴명']} 빼기", key=f"del_{idx}", use_container_width=True):
-                        st.session_state.my_menu = [m for m in st.session_state.my_menu if m['메뉴명'] != row['메뉴명']]
-                        st.rerun()
-                else:
-                    if st.button(f"➕ {row['메뉴명']} 담기", key=f"add_{idx}", use_container_width=True):
-                        st.session_state.my_menu.append(row.to_dict())
-                        st.rerun()
-
-    with col_right:
-        st.subheader("🍽️ 내 식판 데이터 연산")
-        
-        if not st.session_state.my_menu:
-            st.info("왼쪽에서 식판에 담을 메뉴를 선택해 주세요!")
-        else:
-            # 1. 수집 데이터 정산 (연산 가공)
-            total_cal = sum(int(m['칼로리(kcal)']) for m in st.session_state.my_menu)
-            total_protein = sum(float(m['단백질(g)']) for m in st.session_state.my_menu)
-            total_sodium = sum(int(m['나트륨(mg)']) for m in st.session_state.my_menu)
-
-            # 담긴 메뉴 리스트
-            for item in st.session_state.my_menu:
-                st.text(f"• [{item['카테고리']}] {item['메뉴명']} ({item['칼로리(kcal)']}kcal)")
-
-            st.divider()
-            st.subheader("📊 영양 데이터 가공 및 시각화")
-
-            c1, c2, c3 = st.columns(3)
-            c1.metric("총 칼로리", f"{total_cal} kcal")
-            c2.metric("총 단백질", f"{total_protein:.1f} g")
-            c3.metric("총 나트륨", f"{total_sodium} mg")
-
-            # 🔥 [발전 기능] 데이터 시각화 차트 추가 (권장량 대비 비율)
-            st.markdown("#### 📈 권장량 대비 영양성분 비율 (%)")
-            chart_data = pd.DataFrame({
-                "영양소": ["칼로리(800kcal기준)", "단백질(20g기준)", "나트륨(1000mg기준)"],
-                "달성률(%)": [
-                    min(150, int((total_cal / 800) * 100)),
-                    min(150, int((total_protein / 20) * 100)),
-                    min(150, int((total_sodium / 1000) * 100))
-                ]
-            }).set_index("영양소")
-            st.bar_chart(chart_data)
-
-            # -------------------------------------------------------------
-            # 💡 [핵심 알고리즘] 중1 수준 조건문(if-elif-else) 진단
-            # -------------------------------------------------------------
-            st.markdown("#### 🔍 조건문(Logic) 기반 영양 진단")
-            
-            # 칼로리 진단
-            if total_cal < 600:
-                st.warning("⚠️ [칼로리 부족] 활기찬 학업을 위해 더 섭취가 필요합니다.")
-            elif total_cal > 850:
-                st.error("🚨 [칼로리 과다] 열량이 높습니다. 메뉴 배정을 조정해보세요.")
-            else:
-                st.success("✅ [칼로리 적절] 한 끼 권장 범위(600~800kcal)를 충족합니다.")
-
-            # 나트륨 진단
-            if total_sodium > 1000:
-                st.warning("🧂 [나트륨 주의] 국물 섭취를 줄이거나 적절한 조리가 요구됩니다.")
-            else:
-                st.info("👍 [나트륨 적절] 염도가 적절하게 맞춰진 식단입니다.")
-
-            st.divider()
-            
-            # 소감 및 메모 입력
-            st.subheader("📝 데이터 분석 리포트 작성")
-            note_input = st.text_area(
-                "이 식단을 추천하는 이유와 데이터 분석 소감을 적어보세요:",
-                value=st.session_state.chef_note,
-                placeholder="예: 단백질 함량이 20g 이상으로 매우 훌륭하지만 나트륨 수치가 높아 국물을 줄이도록 제안합니다.",
-                height=80
-            )
-            st.session_state.chef_note = note_input
-
-            # PNG 결과 카드 다운로드
-            if st.button("📸 급식 식단표 카드(PNG) 생성", type="primary", use_container_width=True):
-                if not note_input.strip():
-                    st.warning("분석 소감을 먼저 입력해 주세요!")
-                else:
-                    card_bytes = generate_menu_card(
-                        st.session_state.my_menu,
-                        total_cal,
-                        total_protein,
-                        total_sodium,
-                        note_input
-                    )
-                    
-                    st.download_button(
-                        label="💾 PNG 식단표 다운로드",
-                        data=card_bytes,
-                        file_name="오늘의_급식_식단표.png",
-                        mime="image/png",
-                        use_container_width=True
-                    )
-
-# -----------------------------------------------------------------------------
-# TAB 2: 새로운 메뉴 데이터 수집/등록 (학생 실습용)
-# -----------------------------------------------------------------------------
-with tabs[1]:
-    st.subheader("📥 데이터 수집기: 신규 급식 메뉴 데이터 추가")
-    st.write("학생들이 직접 메뉴와 영양 정보를 수집하여 데이터베이스에 추가해보는 실습 칸입니다.")
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        in_name = st.text_input("메뉴명 (문자/String)", value="마라탕")
-        in_cat = st.selectbox("카테고리 (문자/String)", ["밥", "국", "메인반찬", "김치", "후식"])
-        in_cal = st.number_input("칼로리 (정수/Integer)", min_value=0, value=450)
-    with col_b:
-        in_protein = st.number_input("단백질(g) (실수/Float)", min_value=0.0, value=15.5, step=0.1)
-        in_sodium = st.number_input("나트륨(mg) (정수/Integer)", min_value=0, value=950)
-        in_img = st.text_input("이미지 URL (문자/String)", value="https://via.placeholder.com/150")
-
-    if st.button("➕ 메뉴 데이터베이스에 저장하기", use_container_width=True):
-        new_row = pd.DataFrame([{
-            '메뉴명': in_name,
-            '카테고리': in_cat,
-            '칼로리(kcal)': in_cal,
-            '단백질(g)': in_protein,
-            '나트륨(mg)': in_sodium,
-            '이미지url': in_img
-        }])
-        st.session_state.menu_df = pd.concat([st.session_state.menu_df, new_row], ignore_index=True)
-        st.success(f"✅ '{in_name}' 메뉴 데이터가 성공적으로 추가되었습니다! [급식 식단 짜기] 탭에서 확인하세요.")
-
-# -----------------------------------------------------------------------------
-# TAB 3: 데이터 유형(Type) 개념 학습 퀴즈
-# -----------------------------------------------------------------------------
-with tabs[2]:
-    st.subheader("🔍 [2단원 개념] 컴퓨터에서의 데이터 표현과 유형")
-    st.markdown("""
-    우리가 사용한 급식 데이터는 컴퓨터 내부에서 다음과 같은 **데이터 유형(Data Type)**으로 분류되어 저장 및 연산됩니다.
-    
-    * **메뉴명, 카테고리:** `문자열(String)` ➔ 예: `"통밀밥"`, `"국"`
-    * **칼로리, 나트륨:** `정수(Integer)` ➔ 소수점이 없는 숫자 데이터 예: `250`, `620`
-    * **단백질:** `실수(Float)` ➔ 소수점이 포함된 정밀한 숫자 데이터 예: `25.0`, `4.5`
-    * **식판 선택 여부:** `불리언(Boolean)` ➔ 참/거짓 데이터 예: `True`, `False`
-    """)
-    
-    st.divider()
-    st.dataframe(st.session_state.menu_df, use_container_width=True)
+※우리학교는 HACCP에 의해 철저한 위생관리를 하고 있으며 위 식단은 학교사정이나 물가변동에 의해 변동될 수 있습니다.
